@@ -1,0 +1,121 @@
+/* steeldata.org.uk SQL Challenge 4 */
+
+/* the Customers table
+TABLE Customers (
+CustomerID INT PRIMARY KEY,
+FirstName VARCHAR(50) NOT NULL,
+LastName VARCHAR(50) NOT NULL,
+City VARCHAR(50) NOT NULL,
+State VARCHAR(2) NOT NULL
+);
+--------------------
+the Branches table
+ TABLE Branches (
+BranchID INT PRIMARY KEY,
+BranchName VARCHAR(50) NOT NULL,
+City VARCHAR(50) NOT NULL,
+State VARCHAR(2) NOT NULL
+);
+
+--------------------
+ the Accounts table
+ TABLE Accounts (
+AccountID INT PRIMARY KEY,
+CustomerID INT NOT NULL,
+BranchID INT NOT NULL,
+AccountType VARCHAR(50) NOT NULL,
+Balance DECIMAL(10, 2) NOT NULL,
+FOREIGN KEY (CustomerID) REFERENCES Customers(CustomerID),
+FOREIGN KEY (BranchID) REFERENCES Branches(BranchID)
+);
+
+--------------------
+the Transactions table
+ TABLE Transactions (
+TransactionID INT PRIMARY KEY,
+AccountID INT NOT NULL,
+TransactionDate DATE NOT NULL,
+Amount DECIMAL(10, 2) NOT NULL,
+FOREIGN KEY (AccountID) REFERENCES Accounts(AccountID)
+);
+--------------------  */
+
+
+/*1. What are the names of all the customers who live in New York?*/
+SELECT FirstName, LastName
+FROM Customers
+WHERE City = 'New York';
+
+/*2. What is the total number of accounts in the Accounts table?*/
+SELECT COUNT(AccountID) AS TotalNumberOfAccounts
+FROM Accounts;
+
+/*3. What is the total balance of all checking accounts?*/
+SELECT SUM(Balance) AS TotalCheckingBalance
+FROM Accounts
+WHERE AccountType = 'Checking';
+
+/*4. What is the total balance of all accounts associated with customers who live in Los Angeles?*/
+SELECT SUM(Accounts.Balance) AS TotalBalance
+FROM Accounts
+JOIN Customers
+ON Accounts.CustomerID = Customers.CustomerID
+WHERE Customers.City = 'Los Angeles';
+
+/*5. Which branch has the highest average account balance?*/
+SELECT Branches.BranchName, ROUND(AVG(Accounts.Balance),2) AS AverageAccountBalance
+FROM Branches
+JOIN Accounts
+ON Branches.BranchID = Accounts.BranchID
+GROUP BY BranchName
+ORDER BY AverageAccountBalance DESC
+LIMIT 1;
+
+/*6. Which customer has the highest current balance in their accounts?*/
+SELECT CONCAT(Customers.FirstName,' ', Customers.LastName) AS CustomerName
+FROM Customers
+JOIN Accounts
+ON Customers.CustomerID = Accounts.CustomerID
+GROUP BY CustomerName
+ORDER BY MAX(Accounts.Balance) DESC
+LIMIT 1;
+
+/*7. Which customer has made the most transactions in the Transactions table?*/
+SELECT CONCAT(Customers.FirstName, ' ', Customers.LastName) AS CustomerName
+FROM Customers
+JOIN Accounts
+ON Customers.CustomerID = Accounts.CustomerID
+JOIN Transactions
+ON Accounts.AccountID = Transactions.AccountID
+GROUP BY CustomerName
+ORDER BY COUNT(Transactions.AccountID) DESC
+LIMIT 1;
+
+/* 8.Which branch has the highest total balance across all of its accounts?*/
+SELECT Branches.BranchName
+FROM Branches
+JOIN Accounts
+ON Branches.BranchID = Accounts.BranchID
+GROUP BY Branches.BranchName
+ORDER BY MAX(Accounts.Balance) DESC
+LIMIT 1;
+
+/* 9. Which customer has the highest total balance across all of their accounts, including savings and checking accounts?*/
+SELECT CONCAT(Customers.FirstName, ' ', Customers.LastName) AS CustomerName
+FROM Customers
+JOIN Accounts
+ON Customers.CustomerID = Accounts.CustomerID
+GROUP BY CustomerName
+ORDER BY SUM(Accounts.Balance) DESC
+LIMIT 1;
+
+/*10. Which branch has the highest number of transactions in the Transactions table?*/
+SELECT Branches.BranchName
+FROM Branches
+JOIN Accounts
+ON Branches.BranchID = Accounts.BranchID
+JOIN Transactions
+ON Accounts.AccountID = Transactions.AccountID
+GROUP BY BranchName
+ORDER BY MAX(Transactions.AccountID) DESC
+LIMIT 1;
